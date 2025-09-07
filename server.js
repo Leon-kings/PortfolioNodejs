@@ -26,7 +26,7 @@ mongoose
 
 // Routes
 app.use("/messages", messageRoutes);
-app.use("/hire/me", hireMeRoutes);
+app.use("/hire", hireMeRoutes);
 app.use("/subscription", subscriptionRoutes);
 
 // Error handling middleware
