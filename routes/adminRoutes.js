@@ -1,4 +1,26 @@
-const express = require("express");
+// const express = require("express");
+// const router = express.Router();
+// const {
+//   createAdmin,
+//   loginAdmin,
+//   getAdminProfile,
+//   logoutAdmin,
+//   deleteAdmin,
+// } = require("../controllers/adminController");
+
+// // Public route
+// router.post("/login", loginAdmin);
+
+// // Optional: create admin (use protectAdmin if you want only existing admin to create new one)
+// router.post("/create", createAdmin);
+// // Protected route
+// router.get("/profile", getAdminProfile);
+// router.post("/logout", logoutAdmin);
+// router.delete("/", deleteAdmin);
+
+// module.exports = router;
+
+const express = require('express');
 const router = express.Router();
 const {
   createAdmin,
@@ -6,17 +28,16 @@ const {
   getAdminProfile,
   logoutAdmin,
   deleteAdmin,
-} = require("../controllers/adminController");
+} = require('../controllers/adminController');
 
-// Public route
-router.post("/login", loginAdmin);
 
-// Optional: create admin (use protectAdmin if you want only existing admin to create new one)
-router.post("/create", createAdmin);
+// Public
+router.post('/login', loginAdmin);
+router.post('/create', createAdmin); // optional, protect if needed
 
-// Protected route
-router.get("/profile", getAdminProfile);
-router.post("/logout", logoutAdmin);
-router.delete("/", deleteAdmin);
+// Protected
+router.get('/profile', getAdminProfile);
+router.post('/logout', logoutAdmin);
+router.delete('/', deleteAdmin);
 
 module.exports = router;
