@@ -1,22 +1,28 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const multer = require('multer');
-const {
-  createProject,
-  getProjects,
-  getProjectById,
-  updateProject,
-  deleteProject
-} = require('../controllers/projectController');
+const upload = require("../middleware/upload");
+const projectController = require("../controllers/projectController");
 
-const storage = multer.diskStorage({});
-const upload = multer({ storage });
+router.post(
+  "/",
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "hoverImage", maxCount: 1 },
+  ]),
+  projectController.createProject
+);
 
-// CRUD Routes
-router.post('/', upload.fields([{ name: 'image' }, { name: 'hoverImage' }]), createProject);
-router.get('/', getProjects);
-router.get('/:id', getProjectById);
-router.put('/:id', upload.fields([{ name: 'image' }, { name: 'hoverImage' }]), updateProject);
-router.delete('/:id', deleteProject);
+router.put(
+  "/:id",
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "hoverImage", maxCount: 1 },
+  ]),
+  projectController.updateProject
+);
+
+router.get("/", projectController.getProjects);
+router.get("/:id", projectController.getProjectById);
+router.delete("/:id", projectController.deleteProject);
 
 module.exports = router;
