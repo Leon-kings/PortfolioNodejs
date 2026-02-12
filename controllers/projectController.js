@@ -216,24 +216,29 @@ exports.createProject = async (req, res) => {
       color,
     } = req.body;
 
-    // --- Validate required fields ---
+    // ------------------------------
+    // 1️⃣ Validate required fields
+    // ------------------------------
+    if (!title || !category) {
+      return res.status(400).json({ message: "Title and category are required" });
+    }
+
     if (!req.files?.image) {
       return res.status(400).json({ message: "Main image is required" });
     }
 
-    // Optional: limit string lengths
-    if (description && description.length > 5000) {
-      return res
-        .status(400)
-        .json({ message: "Description is too long (max 5000 chars)" });
-    }
-    if (fullDescription && fullDescription.length > 10000) {
-      return res
-        .status(400)
-        .json({ message: "Full description is too long (max 10000 chars)" });
-    }
+    // ------------------------------
+    // 2️⃣ Limit string lengths
+    // ------------------------------
+    const maxDescLength = 5000;
+    const maxFullDescLength = 10000;
 
-    // Parse arrays safely
+    const safeDescription = description?.slice(0, maxDescLength) || "";
+    const safeFullDescription = fullDescription?.slice(0, maxFullDescLength) || "";
+
+    // ------------------------------
+    // 3️⃣ Parse arrays safely
+    // ------------------------------
     let techArr = [];
     let featuresArr = [];
     let linksObj = {};
@@ -245,16 +250,20 @@ exports.createProject = async (req, res) => {
       linksObj = links ? JSON.parse(links) : {};
       statsObj = stats ? JSON.parse(stats) : {};
     } catch {
-      return res
-        .status(400)
-        .json({ message: "Invalid JSON format for features/technologies/links/stats" });
+      return res.status(400).json({
+        message: "Invalid JSON format for features, technologies, links, or stats",
+      });
     }
 
-    // Optional: limit array sizes
+    // ------------------------------
+    // 4️⃣ Limit array sizes
+    // ------------------------------
     if (techArr.length > 50) techArr = techArr.slice(0, 50);
     if (featuresArr.length > 100) featuresArr = featuresArr.slice(0, 100);
 
-    // --- Upload images ---
+    // ------------------------------
+    // 5️⃣ Upload images to Cloudinary
+    // ------------------------------
     const imageResult = await cloudinary.uploader.upload(
       req.files.image[0].path,
       { folder: "projects" }
@@ -268,18 +277,21 @@ exports.createProject = async (req, res) => {
         { folder: "projects" }
       );
       fs.unlinkSync(req.files.hoverImage[0].path);
+
       hoverImageData = {
         public_id: hoverImageResult.public_id,
         url: hoverImageResult.secure_url,
       };
     }
 
-    // --- Create project ---
+    // ------------------------------
+    // 6️⃣ Create Project
+    // ------------------------------
     const project = await Project.create({
       title,
       category,
-      description,
-      fullDescription,
+      description: safeDescription,
+      fullDescription: safeFullDescription,
       technologies: techArr,
       features: featuresArr,
       links: linksObj,
@@ -295,7 +307,10 @@ exports.createProject = async (req, res) => {
     res.status(201).json(project);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
   }
 };
 
