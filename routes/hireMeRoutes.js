@@ -14,9 +14,9 @@ router.post(
   hireMeController.createHireMeRequest
 );
 
-
 router.get('/', hireMeController.getHireMeRequests);
-
 router.put('/:id/status', hireMeController.updateRequestStatus);
+// Delete request (protected)
+router.delete('/:id', hireMeController.deleteHireMeRequest);
 
 module.exports = router;

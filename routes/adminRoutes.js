@@ -5,8 +5,8 @@ const {
   loginAdmin,
   getAdminProfile,
   logoutAdmin,
+  deleteAdmin,
 } = require("../controllers/adminController");
-const { protectAdmin } = require("../middleware/authMiddleware");
 
 // Public route
 router.post("/login", loginAdmin);
@@ -15,7 +15,8 @@ router.post("/login", loginAdmin);
 router.post("/create", createAdmin);
 
 // Protected route
-router.get("/profile", protectAdmin, getAdminProfile);
-router.post("/logout", protectAdmin, logoutAdmin);
+router.get("/profile", getAdminProfile);
+router.post("/logout", logoutAdmin);
+router.delete("/", deleteAdmin);
 
 module.exports = router;
