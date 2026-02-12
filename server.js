@@ -6,6 +6,7 @@ const messageRoutes = require("./routes/messageRoutes");
 const errorHandler = require("./middleware/errorHandler");
 const hireMeRoutes = require("./routes/hireMeRoutes");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
+const adminRoutes = require('./routes/adminRoutes');
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ mongoose
 app.use("/messages", messageRoutes);
 app.use("/hire", hireMeRoutes);
 app.use("/subscription", subscriptionRoutes);
+app.use('/admin', adminRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
