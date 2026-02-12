@@ -202,118 +202,171 @@ const fs = require("fs");
 //     res.status(500).json({ message: "Server error", error: error.message });
 //   }
 // };
+// exports.createProject = async (req, res) => {
+//   try {
+//     const {
+//       title,
+//       category,
+//       description,
+//       fullDescription,
+//       technologies,
+//       features,
+//       links,
+//       stats,
+//       color,
+//     } = req.body;
+
+//     // ------------------------------
+//     // 1️⃣ Validate required fields
+//     // ------------------------------
+//     if (!title || !category) {
+//       return res.status(400).json({ message: "Title and category are required" });
+//     }
+
+//     if (!req.files?.image) {
+//       return res.status(400).json({ message: "Main image is required" });
+//     }
+
+//     // ------------------------------
+//     // 2️⃣ Limit string lengths
+//     // ------------------------------
+//     const maxDescLength = 5000;
+//     const maxFullDescLength = 10000;
+
+//     const safeDescription = description?.slice(0, maxDescLength) || "";
+//     const safeFullDescription = fullDescription?.slice(0, maxFullDescLength) || "";
+
+//     // ------------------------------
+//     // 3️⃣ Parse arrays safely
+//     // ------------------------------
+//     let techArr = [];
+//     let featuresArr = [];
+//     let linksObj = {};
+//     let statsObj = {};
+
+//     try {
+//       techArr = technologies ? JSON.parse(technologies) : [];
+//       featuresArr = features ? JSON.parse(features) : [];
+//       linksObj = links ? JSON.parse(links) : {};
+//       statsObj = stats ? JSON.parse(stats) : {};
+//     } catch {
+//       return res.status(400).json({
+//         message: "Invalid JSON format for features, technologies, links, or stats",
+//       });
+//     }
+
+//     // ------------------------------
+//     // 4️⃣ Limit array sizes
+//     // ------------------------------
+//     if (techArr.length > 50) techArr = techArr.slice(0, 50);
+//     if (featuresArr.length > 100) featuresArr = featuresArr.slice(0, 100);
+
+//     // ------------------------------
+//     // 5️⃣ Upload images to Cloudinary
+//     // ------------------------------
+//     const imageResult = await cloudinary.uploader.upload(
+//       req.files.image[0].path,
+//       { folder: "projects" }
+//     );
+//     fs.unlinkSync(req.files.image[0].path);
+
+//     let hoverImageData = null;
+//     if (req.files?.hoverImage) {
+//       const hoverImageResult = await cloudinary.uploader.upload(
+//         req.files.hoverImage[0].path,
+//         { folder: "projects" }
+//       );
+//       fs.unlinkSync(req.files.hoverImage[0].path);
+
+//       hoverImageData = {
+//         public_id: hoverImageResult.public_id,
+//         url: hoverImageResult.secure_url,
+//       };
+//     }
+
+//     // ------------------------------
+//     // 6️⃣ Create Project
+//     // ------------------------------
+//     const project = await Project.create({
+//       title,
+//       category,
+//       description: safeDescription,
+//       fullDescription: safeFullDescription,
+//       technologies: techArr,
+//       features: featuresArr,
+//       links: linksObj,
+//       stats: statsObj,
+//       color,
+//       image: {
+//         public_id: imageResult.public_id,
+//         url: imageResult.secure_url,
+//       },
+//       hoverImage: hoverImageData,
+//     });
+
+//     res.status(201).json(project);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       message: "Server error",
+//       error: error.message,
+//     });
+//   }
+// };
 exports.createProject = async (req, res) => {
   try {
-    const {
-      title,
-      category,
-      description,
-      fullDescription,
-      technologies,
-      features,
-      links,
-      stats,
-      color,
-    } = req.body;
+    const { title, category, description, fullDescription, links, stats, color } = req.body;
 
-    // ------------------------------
-    // 1️⃣ Validate required fields
-    // ------------------------------
-    if (!title || !category) {
-      return res.status(400).json({ message: "Title and category are required" });
-    }
+    if (!title || !category) return res.status(400).json({ message: "Title & category required" });
+    if (!req.files?.image) return res.status(400).json({ message: "Main image required" });
 
-    if (!req.files?.image) {
-      return res.status(400).json({ message: "Main image is required" });
-    }
-
-    // ------------------------------
-    // 2️⃣ Limit string lengths
-    // ------------------------------
-    const maxDescLength = 5000;
-    const maxFullDescLength = 10000;
-
-    const safeDescription = description?.slice(0, maxDescLength) || "";
-    const safeFullDescription = fullDescription?.slice(0, maxFullDescLength) || "";
-
-    // ------------------------------
-    // 3️⃣ Parse arrays safely
-    // ------------------------------
-    let techArr = [];
-    let featuresArr = [];
-    let linksObj = {};
-    let statsObj = {};
-
-    try {
-      techArr = technologies ? JSON.parse(technologies) : [];
-      featuresArr = features ? JSON.parse(features) : [];
-      linksObj = links ? JSON.parse(links) : {};
-      statsObj = stats ? JSON.parse(stats) : {};
-    } catch {
-      return res.status(400).json({
-        message: "Invalid JSON format for features, technologies, links, or stats",
-      });
-    }
-
-    // ------------------------------
-    // 4️⃣ Limit array sizes
-    // ------------------------------
-    if (techArr.length > 50) techArr = techArr.slice(0, 50);
-    if (featuresArr.length > 100) featuresArr = featuresArr.slice(0, 100);
-
-    // ------------------------------
-    // 5️⃣ Upload images to Cloudinary
-    // ------------------------------
-    const imageResult = await cloudinary.uploader.upload(
-      req.files.image[0].path,
-      { folder: "projects" }
-    );
+    // ----------------------------
+    // Upload images
+    // ----------------------------
+    const imageResult = await cloudinary.uploader.upload(req.files.image[0].path, { folder: "projects" });
     fs.unlinkSync(req.files.image[0].path);
 
     let hoverImageData = null;
     if (req.files?.hoverImage) {
-      const hoverImageResult = await cloudinary.uploader.upload(
-        req.files.hoverImage[0].path,
-        { folder: "projects" }
-      );
+      const hoverResult = await cloudinary.uploader.upload(req.files.hoverImage[0].path, { folder: "projects" });
       fs.unlinkSync(req.files.hoverImage[0].path);
-
-      hoverImageData = {
-        public_id: hoverImageResult.public_id,
-        url: hoverImageResult.secure_url,
-      };
+      hoverImageData = { public_id: hoverResult.public_id, url: hoverResult.secure_url };
     }
 
-    // ------------------------------
-    // 6️⃣ Create Project
-    // ------------------------------
+    // ----------------------------
+    // Parse arrays (sent as multiple FormData entries)
+    // ----------------------------
+    const featuresArr = Array.isArray(req.body.features)
+      ? req.body.features.map(f => f.slice(0, 200)).slice(0, 100)
+      : [];
+
+    const techArr = Array.isArray(req.body.technologies)
+      ? req.body.technologies.map(t => t.slice(0, 200)).slice(0, 50)
+      : [];
+
+    // ----------------------------
+    // Create project
+    // ----------------------------
     const project = await Project.create({
       title,
       category,
-      description: safeDescription,
-      fullDescription: safeFullDescription,
-      technologies: techArr,
+      description: description?.slice(0, 5000) || "",
+      fullDescription: fullDescription?.slice(0, 10000) || "",
       features: featuresArr,
-      links: linksObj,
-      stats: statsObj,
+      technologies: techArr,
+      links: links ? JSON.parse(links) : {},
+      stats: stats ? JSON.parse(stats) : {},
       color,
-      image: {
-        public_id: imageResult.public_id,
-        url: imageResult.secure_url,
-      },
+      image: { public_id: imageResult.public_id, url: imageResult.secure_url },
       hoverImage: hoverImageData,
     });
 
     res.status(201).json(project);
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      message: "Server error",
-      error: error.message,
-    });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 
 // ========================
 // READ ALL
