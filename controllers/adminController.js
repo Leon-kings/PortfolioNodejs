@@ -397,14 +397,15 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
-// Generate JWT
+
 const generateToken = (user) => {
   return jwt.sign(
     { id: user._id, role: user.role },
     process.env.JWT_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: '1d' }
   );
 };
+
 
 // @desc    Create a new admin (optional)
 exports.createAdmin = async (req, res) => {
@@ -468,14 +469,15 @@ exports.loginAdmin = async (req, res) => {
         id: admin._id,
         name: admin.name,
         email: admin.email,
-        role: admin.role
-      }
+        role: admin.role,
+      },
     });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 // @desc    Get admin profile
 // @route   GET /api/admin/profile
