@@ -35,6 +35,25 @@ exports.createAdmin = async (req, res) => {
   }
 };
 
+// controllers/adminController.js
+
+exports.logoutAdmin = async (req, res) => {
+  try {
+    // Optionally, you can update lastLogin or isActive
+    if (req.user) {
+      await User.findByIdAndUpdate(req.user.id, { lastLogin: new Date() });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Admin logged out successfully'
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // @desc    Admin login
 // @route   POST /api/admin/login
 // @access  Public
