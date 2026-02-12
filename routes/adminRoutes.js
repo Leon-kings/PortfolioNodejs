@@ -5,6 +5,7 @@ const {
   loginAdmin,
   getAdminProfile,
   logoutAdmin,
+  deleteAdmin,
 } = require("../controllers/adminController");
 
 // Public route

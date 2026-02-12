@@ -35,9 +35,6 @@ exports.createAdmin = async (req, res) => {
   }
 };
 
-// controllers/adminController.js
-const User = require('../models/User');
-
 // Delete an admin by ID or email
 exports.deleteAdmin = async (req, res) => {
   try {
