@@ -28,6 +28,48 @@ exports.createMessage = async (req, res, next) => {
   }
 };
 
+// Delete Message by ID
+exports.deleteMessage = async (req, res, next) => {
+  try {
+    const { id } = req.body;
+
+    // Validate request
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Message ID is required",
+      });
+    }
+
+    const existingMessage = await Message.findById(id);
+
+    if (!existingMessage) {
+      return res.status(404).json({
+        success: false,
+        message: "Message not found",
+      });
+    }
+
+    await existingMessage.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: `Message from ${existingMessage.email} deleted successfully`,
+      data: {
+        id: existingMessage._id,
+        name: existingMessage.name,
+        email: existingMessage.email,
+        services: existingMessage.services,
+      },
+    });
+
+  } catch (err) {
+    console.error("Delete message error:", err);
+    next(err);
+  }
+};
+
+
 exports.getMessages = async (req, res, next) => {
   try {
     const messages = await Message.find().sort({ createdAt: -1 });

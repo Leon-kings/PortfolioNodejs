@@ -16,5 +16,6 @@ router.post(
 router.get('/', messageController.getMessages);
 
 router.put('/:id/read', messageController.markAsRead);
+router.delete('/:id',  messageController.deleteMessage);
 
 module.exports = router;

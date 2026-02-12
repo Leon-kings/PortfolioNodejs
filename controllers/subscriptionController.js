@@ -31,6 +31,41 @@ exports.subscribe = async (req, res, next) => {
   }
 };
 
+// Delete subscription permanently (Admin)
+exports.deleteSubscription = async (req, res, next) => {
+  try {
+    const { id } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Subscription ID is required",
+      });
+    }
+
+    const subscription = await Subscription.findById(id);
+
+    if (!subscription) {
+      return res.status(404).json({
+        success: false,
+        message: "Subscription not found",
+      });
+    }
+
+    await subscription.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: "Subscription deleted permanently",
+    });
+
+  } catch (err) {
+    console.error("Delete subscription error:", err);
+    next(err);
+  }
+};
+
+
 exports.unsubscribe = async (req, res, next) => {
   try {
     const { email } = req.params;

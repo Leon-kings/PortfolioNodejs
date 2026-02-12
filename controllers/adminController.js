@@ -36,6 +36,61 @@ exports.createAdmin = async (req, res) => {
 };
 
 // controllers/adminController.js
+const User = require('../models/User');
+
+// Delete an admin by ID or email
+exports.deleteAdmin = async (req, res) => {
+  try {
+    const { id, email } = req.body;
+
+    // Validate input
+    if (!id && !email) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide admin ID or email to delete",
+      });
+    }
+
+    // Find the admin
+    const admin = id
+      ? await User.findById(id)
+      : await User.findOne({ email });
+
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin not found",
+      });
+    }
+
+    // Ensure role is admin
+    if (admin.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Only admins can be deleted via this route",
+      });
+    }
+
+    // Delete admin
+    await admin.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: `Admin ${admin.email} deleted successfully`,
+      data: {
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role,
+      },
+    });
+  } catch (err) {
+    console.error("Delete admin error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// controllers/adminController.js
 
 exports.logoutAdmin = async (req, res) => {
   try {

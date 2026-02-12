@@ -13,5 +13,6 @@ router.post(
 
 router.delete('/:email', subscriptionController.unsubscribe);
 router.get('/', subscriptionController.getAllSubscribers);
+router.delete('/:id',  subscriptionController.deleteSubscription);
 
 module.exports = router;

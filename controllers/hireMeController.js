@@ -34,6 +34,46 @@ exports.createHireMeRequest = async (req, res, next) => {
   }
 };
 
+// Delete a hire me request by ID
+exports.deleteHireMeRequest = async (req, res, next) => {
+  try {
+    const { id } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide the ID of the request to delete'
+      });
+    }
+
+    const request = await HireMe.findById(id);
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: 'Hire Me request not found'
+      });
+    }
+
+    await request.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: `Hire Me request from ${request.email} deleted successfully`,
+      data: {
+        id: request._id,
+        name: request.name,
+        email: request.email,
+        message: request.message,
+        budget: request.budget
+      }
+    });
+  } catch (err) {
+    console.error('Delete Hire Me request error:', err);
+    next(err);
+  }
+};
+
 exports.getHireMeRequests = async (req, res, next) => {
   try {
     const requests = await HireMe.find().sort({ createdAt: -1 });
