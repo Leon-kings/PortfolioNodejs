@@ -120,6 +120,7 @@ const messageRoutes = require("./routes/messageRoutes");
 const hireMeRoutes = require("./routes/hireMeRoutes");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const projectRoutes = require('./routes/projectRoutes');
 
 // Middleware
 const errorHandler = require("./middleware/errorHandler");
@@ -159,6 +160,7 @@ app.use("/messages", messageRoutes);
 app.use("/hire", hireMeRoutes);
 app.use("/subscription", subscriptionRoutes);
 app.use("/admin", adminRoutes);
+app.use('/projects', projectRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
