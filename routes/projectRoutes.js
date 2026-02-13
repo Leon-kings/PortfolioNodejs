@@ -95,40 +95,75 @@
 
 
 
+// const express = require("express");
+// const router = express.Router();
+// const upload = require("../middleware/upload");
+
+// const {
+//   createProject,
+//   getProjects,
+//   getProjectById,
+//   updateProject,
+//   deleteProject,
+// } = require("../controllers/projectController");
+
+// router.post(
+//   "/",
+//   upload.fields([
+//     { name: "image", maxCount: 1 },
+//     { name: "hoverImage", maxCount: 1 },
+//   ]),
+//   createProject
+// );
+
+// router.get("/", getProjects);
+
+// router.get("/:id", getProjectById);
+
+// router.put(
+//   "/:id",
+//   upload.fields([
+//     { name: "image", maxCount: 1 },
+//     { name: "hoverImage", maxCount: 1 },
+//   ]),
+//   updateProject
+// );
+
+// router.delete("/:id", deleteProject);
+
+// module.exports = router;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const express = require("express");
 const router = express.Router();
-const upload = require("../middleware/upload");
-
+const upload = require("../middleware/multer"); // multer for handling files
 const {
   createProject,
   getProjects,
-  getProjectById,
   updateProject,
   deleteProject,
 } = require("../controllers/projectController");
 
-router.post(
-  "/",
-  upload.fields([
-    { name: "image", maxCount: 1 },
-    { name: "hoverImage", maxCount: 1 },
-  ]),
-  createProject
-);
-
+// Full CRUD
 router.get("/", getProjects);
-
-router.get("/:id", getProjectById);
-
-router.put(
-  "/:id",
-  upload.fields([
-    { name: "image", maxCount: 1 },
-    { name: "hoverImage", maxCount: 1 },
-  ]),
-  updateProject
-);
-
+router.post("/", upload.fields([{ name: "image" }, { name: "hoverImage" }]), createProject);
+router.put("/:id", updateProject);
 router.delete("/:id", deleteProject);
 
 module.exports = router;
+
