@@ -1146,8 +1146,87 @@ const cloudinary = require("../cloudinary/cloudinary");
 const fs = require("fs");
 
 // ---------------- CREATE ----------------
+// exports.createProject = async (req, res) => {
+//   try {
+//     const {
+//       title,
+//       category,
+//       description,
+//       fullDescription,
+//       features,
+//       technologies,
+//       links,
+//       stats,
+//       color,
+//     } = req.body;
+
+//     if (!title || !category) return res.status(400).json({ message: "Title & category required" });
+//     if (!req.files?.image) return res.status(400).json({ message: "Main image required" });
+
+//     // Upload main image
+//     const imageResult = await cloudinary.uploader.upload(req.files.image[0].path, { folder: "projects" });
+//     fs.unlinkSync(req.files.image[0].path);
+
+//     // Optional hover image
+//     let hoverImageData = null;
+//     if (req.files?.hoverImage) {
+//       const hoverResult = await cloudinary.uploader.upload(req.files.hoverImage[0].path, { folder: "projects" });
+//       fs.unlinkSync(req.files.hoverImage[0].path);
+//       hoverImageData = { public_id: hoverResult.public_id, url: hoverResult.secure_url };
+//     }
+
+//     // ---------------- SAFE SLICING ----------------
+//     const safeTitle = (title || "").slice(0, 200);
+//     const safeCategory = category;
+//     const safeDescription = (description || "").slice(0, 5000);
+//     const safeFullDescription = (fullDescription || "").slice(0, 10000);
+//     const safeColor = (color || "").slice(0, 20);
+
+//     const safeFeatures = Array.isArray(features)
+//       ? features.map(f => (f || "").slice(0, 200)).slice(0, 100)
+//       : [];
+
+//     const safeTechnologies = Array.isArray(technologies)
+//       ? technologies.map(t => (t || "").slice(0, 200)).slice(0, 50)
+//       : [];
+
+//     let safeLinks = {};
+//     let safeStats = {};
+//     try {
+//       safeLinks = links ? JSON.parse(links) : {};
+//       safeStats = stats ? JSON.parse(stats) : {};
+//     } catch (err) {
+//       safeLinks = {};
+//       safeStats = {};
+//     }
+
+//     const project = await Project.create({
+//       title: safeTitle,
+//       category: safeCategory,
+//       description: safeDescription,
+//       fullDescription: safeFullDescription,
+//       features: safeFeatures,
+//       technologies: safeTechnologies,
+//       links: safeLinks,
+//       stats: safeStats,
+//       color: safeColor,
+//       image: { public_id: imageResult.public_id, url: imageResult.secure_url },
+//       hoverImage: hoverImageData,
+//     });
+
+//     res.status(201).json(project);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Server error", error: error.message });
+//   }
+// };
+
 exports.createProject = async (req, res) => {
   try {
+    console.log("========== CREATE PROJECT START ==========");
+    console.log("BODY RECEIVED:", req.body);
+    console.log("FILES RECEIVED:", req.files);
+
     const {
       title,
       category,
@@ -1160,66 +1239,124 @@ exports.createProject = async (req, res) => {
       color,
     } = req.body;
 
-    if (!title || !category) return res.status(400).json({ message: "Title & category required" });
-    if (!req.files?.image) return res.status(400).json({ message: "Main image required" });
-
-    // Upload main image
-    const imageResult = await cloudinary.uploader.upload(req.files.image[0].path, { folder: "projects" });
-    fs.unlinkSync(req.files.image[0].path);
-
-    // Optional hover image
-    let hoverImageData = null;
-    if (req.files?.hoverImage) {
-      const hoverResult = await cloudinary.uploader.upload(req.files.hoverImage[0].path, { folder: "projects" });
-      fs.unlinkSync(req.files.hoverImage[0].path);
-      hoverImageData = { public_id: hoverResult.public_id, url: hoverResult.secure_url };
+    if (!title || !category) {
+      return res.status(400).json({ error: "Title and category required" });
     }
 
-    // ---------------- SAFE SLICING ----------------
+    if (!req.files?.image) {
+      return res.status(400).json({ error: "Main image required" });
+    }
+
+    // ---------------- PARSE JSON SAFELY ----------------
+    let parsedFeatures = [];
+    let parsedTechnologies = [];
+    let parsedLinks = {};
+    let parsedStats = {};
+
+    try {
+      parsedFeatures = features ? JSON.parse(features) : [];
+      parsedTechnologies = technologies ? JSON.parse(technologies) : [];
+      parsedLinks = links ? JSON.parse(links) : {};
+      parsedStats = stats ? JSON.parse(stats) : {};
+    } catch (err) {
+      console.log("❌ JSON PARSE ERROR:", err.message);
+      return res.status(400).json({ error: "Invalid JSON format" });
+    }
+
+    console.log("Parsed Features:", parsedFeatures);
+    console.log("Parsed Technologies:", parsedTechnologies);
+
+    // ---------------- ENFORCE LIMITS ----------------
     const safeTitle = (title || "").slice(0, 200);
-    const safeCategory = category;
     const safeDescription = (description || "").slice(0, 5000);
     const safeFullDescription = (fullDescription || "").slice(0, 10000);
     const safeColor = (color || "").slice(0, 20);
 
-    const safeFeatures = Array.isArray(features)
-      ? features.map(f => (f || "").slice(0, 200)).slice(0, 100)
-      : [];
+    const safeFeatures = parsedFeatures
+      .map((f, index) => {
+        if ((f || "").length > 200) {
+          console.log(`⚠ Feature too long at index ${index}:`, f.length);
+        }
+        return (f || "").slice(0, 200);
+      })
+      .slice(0, 100);
 
-    const safeTechnologies = Array.isArray(technologies)
-      ? technologies.map(t => (t || "").slice(0, 200)).slice(0, 50)
-      : [];
+    const safeTechnologies = parsedTechnologies
+      .map((t, index) => {
+        if ((t || "").length > 200) {
+          console.log(`⚠ Technology too long at index ${index}:`, t.length);
+        }
+        return (t || "").slice(0, 200);
+      })
+      .slice(0, 50);
 
-    let safeLinks = {};
-    let safeStats = {};
-    try {
-      safeLinks = links ? JSON.parse(links) : {};
-      safeStats = stats ? JSON.parse(stats) : {};
-    } catch (err) {
-      safeLinks = {};
-      safeStats = {};
+    // ---------------- LOG LENGTHS ----------------
+    console.log("Title length:", safeTitle.length);
+    console.log("Description length:", safeDescription.length);
+    console.log("FullDescription length:", safeFullDescription.length);
+    console.log("Color length:", safeColor.length);
+
+    // ---------------- UPLOAD IMAGE ----------------
+    const imageResult = await cloudinary.uploader.upload(
+      req.files.image[0].path,
+      { folder: "projects" }
+    );
+    fs.unlinkSync(req.files.image[0].path);
+
+    let hoverImageData = null;
+
+    if (req.files?.hoverImage) {
+      const hoverResult = await cloudinary.uploader.upload(
+        req.files.hoverImage[0].path,
+        { folder: "projects" }
+      );
+      fs.unlinkSync(req.files.hoverImage[0].path);
+
+      hoverImageData = {
+        public_id: hoverResult.public_id,
+        url: hoverResult.secure_url,
+      };
     }
 
+    // ---------------- CREATE PROJECT ----------------
     const project = await Project.create({
       title: safeTitle,
-      category: safeCategory,
+      category,
       description: safeDescription,
       fullDescription: safeFullDescription,
       features: safeFeatures,
       technologies: safeTechnologies,
-      links: safeLinks,
-      stats: safeStats,
+      links: {
+        live: (parsedLinks.live || "").slice(0, 500),
+        code: (parsedLinks.code || "").slice(0, 500),
+      },
+      stats: {
+        clients: (parsedStats.clients || "1").slice(0, 50),
+        rating: (parsedStats.rating || "4.2").slice(0, 10),
+        projects: (parsedStats.projects || "1").slice(0, 50),
+      },
       color: safeColor,
-      image: { public_id: imageResult.public_id, url: imageResult.secure_url },
+      image: {
+        public_id: imageResult.public_id,
+        url: imageResult.secure_url,
+      },
       hoverImage: hoverImageData,
     });
 
+    console.log("✅ PROJECT CREATED SUCCESSFULLY");
+    console.log("========== CREATE PROJECT END ==========");
+
     res.status(201).json(project);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.log("❌ SERVER ERROR:", error.message);
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      error: error.message || "Server error",
+    });
   }
 };
+
 
 // ---------------- READ ----------------
 exports.getProjects = async (req, res) => {
