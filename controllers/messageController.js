@@ -31,7 +31,7 @@ exports.createMessage = async (req, res, next) => {
 // Delete Message by ID
 exports.deleteMessage = async (req, res, next) => {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
 
     // Validate request
     if (!id) {

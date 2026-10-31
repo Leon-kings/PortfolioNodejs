@@ -34,7 +34,7 @@ exports.subscribe = async (req, res, next) => {
 // Delete subscription permanently (Admin)
 exports.deleteSubscription = async (req, res, next) => {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
 
     if (!id) {
       return res.status(400).json({
