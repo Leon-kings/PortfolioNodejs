@@ -7,26 +7,31 @@ const testimonialSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+
     role: {
       type: String,
       required: true,
       trim: true,
     },
+
     company: {
       type: String,
       default: "",
       trim: true,
     },
+
     website: {
       type: String,
       default: "",
       trim: true,
     },
+
     message: {
       type: String,
       required: true,
       trim: true,
     },
+
     rating: {
       type: Number,
       default: 5,
