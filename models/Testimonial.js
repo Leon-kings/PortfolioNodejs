@@ -4,13 +4,13 @@ const testimonialSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, "Name is required"],
       trim: true,
     },
 
     role: {
       type: String,
-      required: true,
+      required: [true, "Role is required"],
       trim: true,
     },
 
@@ -28,15 +28,15 @@ const testimonialSchema = new mongoose.Schema(
 
     message: {
       type: String,
-      required: true,
+      required: [true, "Message is required"],
       trim: true,
     },
 
     rating: {
       type: Number,
       default: 5,
-      min: 1,
-      max: 5,
+      min: [1, "Rating must be at least 1"],
+      max: [5, "Rating cannot exceed 5"],
     },
   },
   {
@@ -44,4 +44,6 @@ const testimonialSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("Testimonial", testimonialSchema);
+module.exports =
+  mongoose.models.Testimonial ||
+  mongoose.model("Testimonial", testimonialSchema);

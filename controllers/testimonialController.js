@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Testimonial = require("../models/Testimonial");
 
 // CREATE TESTIMONIAL
@@ -15,7 +16,7 @@ const createTestimonial = async (req, res) => {
     if (!name || !role || !message) {
       return res.status(400).json({
         success: false,
-        message: "Name, role and message are required",
+        message: "Name, role, and message are required.",
       });
     }
 
@@ -25,12 +26,12 @@ const createTestimonial = async (req, res) => {
       company,
       website,
       message,
-      rating: rating ?? 5,
+      rating: rating || 5,
     });
 
     return res.status(201).json({
       success: true,
-      message: "Testimonial submitted successfully",
+      message: "Testimonial submitted successfully.",
       testimonial,
     });
   } catch (error) {
@@ -43,11 +44,11 @@ const createTestimonial = async (req, res) => {
 };
 
 // GET ALL TESTIMONIALS
-const getAllTestimonials = async (req, res) => {
+const getTestimonials = async (req, res) => {
   try {
-    const testimonials = await Testimonial.find().sort({
-      createdAt: -1,
-    });
+    const testimonials = await Testimonial.find()
+      .sort({ createdAt: -1 })
+      .lean();
 
     return res.status(200).json({
       success: true,
@@ -66,12 +67,21 @@ const getAllTestimonials = async (req, res) => {
 // GET SINGLE TESTIMONIAL
 const getTestimonialById = async (req, res) => {
   try {
-    const testimonial = await Testimonial.findById(req.params.id);
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid testimonial ID.",
+      });
+    }
+
+    const testimonial = await Testimonial.findById(id);
 
     if (!testimonial) {
       return res.status(404).json({
         success: false,
-        message: "Testimonial not found",
+        message: "Testimonial not found.",
       });
     }
 
@@ -91,25 +101,35 @@ const getTestimonialById = async (req, res) => {
 // UPDATE TESTIMONIAL
 const updateTestimonial = async (req, res) => {
   try {
-    const {
-      name,
-      role,
-      company,
-      website,
-      message,
-      rating,
-    } = req.body;
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid testimonial ID.",
+      });
+    }
+
+    const allowedFields = [
+      "name",
+      "role",
+      "company",
+      "website",
+      "message",
+      "rating",
+    ];
+
+    const updateData = {};
+
+    allowedFields.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    });
 
     const testimonial = await Testimonial.findByIdAndUpdate(
-      req.params.id,
-      {
-        name,
-        role,
-        company,
-        website,
-        message,
-        rating,
-      },
+      id,
+      { $set: updateData },
       {
         new: true,
         runValidators: true,
@@ -119,13 +139,13 @@ const updateTestimonial = async (req, res) => {
     if (!testimonial) {
       return res.status(404).json({
         success: false,
-        message: "Testimonial not found",
+        message: "Testimonial not found.",
       });
     }
 
     return res.status(200).json({
       success: true,
-      message: "Testimonial updated successfully",
+      message: "Testimonial updated successfully.",
       testimonial,
     });
   } catch (error) {
@@ -140,20 +160,27 @@ const updateTestimonial = async (req, res) => {
 // DELETE TESTIMONIAL
 const deleteTestimonial = async (req, res) => {
   try {
-    const testimonial = await Testimonial.findByIdAndDelete(
-      req.params.id
-    );
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid testimonial ID.",
+      });
+    }
+
+    const testimonial = await Testimonial.findByIdAndDelete(id);
 
     if (!testimonial) {
       return res.status(404).json({
         success: false,
-        message: "Testimonial not found",
+        message: "Testimonial not found.",
       });
     }
 
     return res.status(200).json({
       success: true,
-      message: "Testimonial deleted successfully",
+      message: "Testimonial deleted successfully.",
     });
   } catch (error) {
     return res.status(500).json({
@@ -166,7 +193,7 @@ const deleteTestimonial = async (req, res) => {
 
 module.exports = {
   createTestimonial,
-  getAllTestimonials,
+  getTestimonials,
   getTestimonialById,
   updateTestimonial,
   deleteTestimonial,
